@@ -73,6 +73,16 @@
         </v-btn>
       </div>
     </div>
+
+    <location-search
+      v-model="searchOpen"
+      small
+      buttonSize="xl"
+      :search-provider="geocodingInfoForSearch"
+      :accentColor="accentColor"
+      @error="(error: string) => searchErrorMessage = error"
+    ></location-search>
+
     <!-- This contains the splash screen content -->
 
     <v-overlay
@@ -112,6 +122,8 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import L, { Map } from "leaflet";
+
+import { MapBoxFeatureCollection, geocodingInfoForSearch } from "./mapbox";
 
 type SheetType = "text" | "video" | null;
 type Timeout = ReturnType<typeof setTimeout>;
@@ -336,6 +348,9 @@ export default defineComponent({
         interactive: false,
       }),
       datetimes,
+
+      searchOpen: true,
+      searchErrorMessage: null as string | null,
     };
   },
 
@@ -473,6 +488,9 @@ export default defineComponent({
       }
       this.playing = !this.playing;
     },
+    async geocodingInfoForSearch(searchText: string): Promise<MapBoxFeatureCollection | null> {
+      return geocodingInfoForSearch(searchText).catch(_err => null);
+    }
   },
 
   watch: {

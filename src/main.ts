@@ -1,6 +1,7 @@
 import Vue, { createApp } from "vue";
 
 import { FundingAcknowledgment, IconButton, CreditLogos } from "@cosmicds/vue-toolkit";
+import LocationSearch from "./LocationSearch.vue";
 import TempoLite from "./TempoLite.vue";
 
 import vuetify from "../plugins/vuetify";
@@ -53,6 +54,7 @@ createApp(TempoLite, {})
   .component('icon-button', IconButton)
   .component('funding-acknowledgement', FundingAcknowledgment)
   .component('credit-logos', CreditLogos)
+  .component('location-search', LocationSearch)
 
   // Mount
   .mount("#app");
