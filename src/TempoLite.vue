@@ -80,6 +80,9 @@
       buttonSize="xl"
       :search-provider="geocodingInfoForSearch"
       :accentColor="accentColor"
+      @set-location="(feature: MapBoxFeature) => {
+        map?.setView([feature.center[1], feature.center[0]], 6);
+      }"
       @error="(error: string) => searchErrorMessage = error"
     ></location-search>
 
@@ -123,7 +126,9 @@
 import { defineComponent } from "vue";
 import L, { Map } from "leaflet";
 
-import { MapBoxFeatureCollection, geocodingInfoForSearch } from "./mapbox";
+// We DO use MapBoxFeature in the template, but eslint isn't picking this up for some reason
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { MapBoxFeature, MapBoxFeatureCollection, geocodingInfoForSearch } from "./mapbox";
 
 type SheetType = "text" | "video" | null;
 type Timeout = ReturnType<typeof setTimeout>;
@@ -489,7 +494,7 @@ export default defineComponent({
       this.playing = !this.playing;
     },
     async geocodingInfoForSearch(searchText: string): Promise<MapBoxFeatureCollection | null> {
-      return geocodingInfoForSearch(searchText).catch(_err => null);
+      return geocodingInfoForSearch(searchText, { countries: ["US"] }).catch(_err => null);
     }
   },
 

@@ -26,6 +26,13 @@ export interface MapBoxFeatureCollection {
   features: MapBoxFeature[];
 }
 
+// TODO: Add more options as we need them
+// See https://docs.mapbox.com/api/search/geocoding-v6/#forward-geocoding-with-search-text-input
+export interface MapBoxForwardGeocodingOptions {
+  countries?: string[];
+  types?: string[];
+}
+
 const RELEVANT_FEATURE_TYPES = ["postcode", "place", "region", "country"];
 const NA_COUNTRIES = ["United States", "Canada", "Mexico"];
 const NA_ABBREVIATIONS = ["US-", "CA-", "MX-"];
@@ -98,8 +105,15 @@ export async function textForLocation(longitudeDeg: number, latitudeDeg: number)
     });
 }
 
-export async function geocodingInfoForSearch(searchText: string): Promise<MapBoxFeatureCollection> {
+export async function geocodingInfoForSearch(searchText: string, options?: MapBoxForwardGeocodingOptions): Promise<MapBoxFeatureCollection> {
   const accessToken = process.env.VUE_APP_MAPBOX_ACCESS_TOKEN;
-  const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${searchText}.json?access_token=${accessToken}&types=place,postcode`;
+  const search = new URLSearchParams();
+  search.set("access_token", accessToken ?? "");
+  const types = (options?.types ?? ["place", "postcode"]).join(",");
+  search.set("types", types);
+  if (options?.countries) {
+    search.set("country", options.countries.join(","));
+  }
+  const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${searchText}.json?${search.toString()}`;
   return fetch(url).then(response => response.json());
 }
