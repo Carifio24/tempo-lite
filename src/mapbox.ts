@@ -29,6 +29,8 @@ export interface MapBoxFeatureCollection {
 // TODO: Add more options as we need them
 // See https://docs.mapbox.com/api/search/geocoding-v6/#forward-geocoding-with-search-text-input
 export interface MapBoxForwardGeocodingOptions {
+  // For countries, use the ISO 3166-1 alpha-2 country codes:
+  // https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
   countries?: string[];
   types?: string[];
 }

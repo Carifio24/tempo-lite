@@ -494,7 +494,7 @@ export default defineComponent({
       this.playing = !this.playing;
     },
     async geocodingInfoForSearch(searchText: string): Promise<MapBoxFeatureCollection | null> {
-      return geocodingInfoForSearch(searchText, { countries: ["US"] }).catch(_err => null);
+      return geocodingInfoForSearch(searchText, { countries: ["US", "CA", "MX", "CU", "BM", "HT", "DO"] }).catch(_err => null);
     }
   },
 
