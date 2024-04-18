@@ -1,4 +1,3 @@
-
 const colors : [number, number, number][] = [
   [0.0, 0.135112, 0.304751],
   [0.0, 0.138068, 0.311105],
@@ -264,5 +263,4 @@ export function cividis(value: number, alpha: number = 1) {
   const index = Math.round(value * 255);
   const color = colors[index];
   return `rgba(${color[0] * 255}, ${color[1] * 255}, ${color[2] * 255}, ${alpha})`;
-  
 }

@@ -161,7 +161,7 @@
 import { defineComponent } from "vue";
 import L, { Map } from "leaflet";
 
-import  { cividis } from "./cividis";
+import { cividis } from "./cividis";
 import fieldOfRegard from "./assets/TEMPO_FOR.json";
 // We DO use MapBoxFeature in the template, but eslint isn't picking this up for some reason
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -353,6 +353,15 @@ export default defineComponent({
       new L.LatLng(17.025, -129.975),
       new L.LatLng(63.975, -54.475)
     );
+
+    const marchBounds = new L.LatLngBounds(
+      new L.LatLng(14.01, -167.99),
+      new L.LatLng(72.99, -13.01)
+    );
+    const novDecBounds = new L.LatLngBounds(
+      new L.LatLng(17.025, -154.975),
+      new L.LatLng(63.975, -24.475)
+    );
     const fieldOfRegardLayer = L.geoJSON(
       fieldOfRegard as GeoJSON.GeometryCollection,
       {
@@ -394,6 +403,7 @@ export default defineComponent({
 
       timestep: 0,
       timeIndex: 0,
+      timestamp: 0,
       maxIndex: datetimes.length,
       timeValues: [...Array(datetimes.length).keys()],
       playing: false,
@@ -496,7 +506,8 @@ export default defineComponent({
       }
     },
     imageUrl(): string {
-      return `https://tempo-demo-images.s3.amazonaws.com/img_${this.timeValues[this.timeIndex]}_cividis_stretch.png`;
+      const date = new Date(this.timestamp);
+      return `https://tempo-demo-images.s3.amazonaws.com/tempo_${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}T${date.getHours()}h${date.getMinutes()}m.png`;
     },
   },
 
