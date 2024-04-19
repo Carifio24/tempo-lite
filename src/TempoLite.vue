@@ -27,32 +27,43 @@
       </div>
         <div id="when" class="big-label">when</div>
         <div id="slider-row">
-        <icon-button
-          v-if="false"
-          :fa-icon="playing ? 'pause' : 'play'"
-          @activate="playOrPause"
-        ></icon-button>
-          <v-slider
-            v-model="timeIndex"
-            :min="minIndex"
-            :max="maxIndex"
-            :step="1"
-            color="#068ede95"
-            thumb-label="always"
-            :track-size="10"
-            hide-details
-          >
-            <template v-slot:thumb-label>
-              <div class="thumb-label">
-                {{ thumbLabel }}
-              </div>
-            </template>
+          <icon-button
+            v-if="false"
+            :fa-icon="playing ? 'pause' : 'play'"
+            @activate="playOrPause"
+          ></icon-button>
+            <v-slider
+              v-model="timeIndex"
+              :min="minIndex"
+              :max="maxIndex"
+              :step="1"
+              color="#068ede95"
+              thumb-label="always"
+              :track-size="10"
+              hide-details
+            >
+              <template v-slot:thumb-label>
+                <div class="thumb-label">
+                  {{ thumbLabel }}
+                </div>
+              </template>
           </v-slider>
         </div>
-      
-      <div id="user-options">
-        <div>
-          <!-- make a v-radio-group with 3 options -->
+
+
+        <div id="timezone-select">
+          <v-select
+            v-model="selectedTimezone"
+            label="Timezone"
+            :items="timezoneOptions"
+            item-title="name"
+            item-value="tz"
+          ></v-select>
+        </div>
+
+       <div id="user-options">
+         <div>
+           <!-- make a v-radio-group with 3 options -->
           <h2>Sample Scenarios</h2>
           <v-radio-group
             v-model="radio"
@@ -145,6 +156,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import L, { Map } from "leaflet";
+import { getTimezoneOffset } from "date-fns-tz";
 
 import { cividis } from "./cividis";
 import fieldOfRegard from "./assets/TEMPO_FOR.json";
@@ -154,6 +166,11 @@ import { MapBoxFeature, MapBoxFeatureCollection, geocodingInfoForSearch } from "
 
 type SheetType = "text" | "video" | null;
 type Timeout = ReturnType<typeof setTimeout>;
+
+interface TimezoneInfo {
+  tz: string;
+  name: string;
+}
 
 const timestamps = [
   1698838920000,
@@ -243,6 +260,14 @@ export default defineComponent({
         new L.LatLng(72.99, -13.01)
       ),
       fieldOfRegardLayer,
+
+      timezoneOptions: [
+        { tz: 'US/Eastern', name: 'Eastern' },
+        { tz: 'US/Central', name: 'Central' },
+        { tz: 'US/Mountain', name: 'Mountain' },
+        { tz: 'US/Pacific', name: 'Pacific' }
+      ] as TimezoneInfo[],
+      selectedTimezone: "US/Eastern",
 
       timestep: 0,
       timeIndex: 0,
@@ -356,17 +381,18 @@ export default defineComponent({
     },
     // TODO: Maybe there's a built-in Date function to get this formatting?
     thumbLabel(): string {
-      const hours = this.date.getHours();
+      const offset = getTimezoneOffset(this.selectedTimezone, this.date);
+      const date = new Date(this.timestamp + offset); 
+      const hours = date.getUTCHours();
       const amPm = hours >= 12 ? "PM" : "AM";
       let hourValue = hours % 12;
       if (hourValue === 0) {
         hourValue = 12;
       }
-      return `${this.date.getMonth()+1}/${this.date.getDate()}/${this.date.getFullYear()} ${hourValue}:${this.date.getMinutes().toString().padStart(2, '0')} ${amPm}`;
+      return `${this.date.getUTCMonth()+1}/${date.getUTCDate()}/${date.getUTCFullYear()} ${hourValue}:${date.getUTCMinutes().toString().padStart(2, '0')} ${amPm}`;
     },
     imageUrl(): string {
-      const date = this.date;
-      return `https://tempo-demo-images.s3.amazonaws.com/tempo_${date.getUTCFullYear()}-${(date.getUTCMonth()+1).toString().padStart(2, '0')}-${date.getUTCDate().toString().padStart(2, '0')}T${date.getUTCHours()}h${date.getUTCMinutes().toString().padStart(2, '0')}m.png`;
+      return `https://tempo-demo-images.s3.amazonaws.com/tempo_${this.date.getUTCFullYear()}-${(this.date.getUTCMonth()+1).toString().padStart(2, '0')}-${this.date.getUTCDate().toString().padStart(2, '0')}T${this.date.getUTCHours()}h${this.date.getUTCMinutes().toString().padStart(2, '0')}m.png`;
     },
   },
 
@@ -449,7 +475,7 @@ export default defineComponent({
       const bounds = value < 2 ? this.novDecBounds : this.marchBounds;
       this.map?.fitBounds(bounds);
       this.imageOverlay.setBounds(bounds);
-    }
+    },
   }
 });
 </script>
@@ -562,6 +588,11 @@ body {
   
   #slider-row {
     grid-column: 2 / 3;
+    grid-row: 3 / 4;
+  }
+
+  #timezone-select {
+    grid-column: 3 / 4;
     grid-row: 3 / 4;
   }
   
