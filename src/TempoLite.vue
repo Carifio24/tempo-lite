@@ -42,9 +42,9 @@
             :track-size="10"
             hide-details
           >
-            <template v-slot:thumb-label="{ modelValue }">
+            <template v-slot:thumb-label>
               <div class="thumb-label">
-                {{ datetimes[modelValue] }}
+                {{ thumbLabel }}
               </div>
             </template>
           </v-slider>
@@ -59,28 +59,16 @@
             row
           >
             <v-radio
-              label="Option 1"
-              value="0"
-              @click="() => {
-              map?.fitBounds(bounds);
-              timeIndex = 0;
-            }"
+              label="November 1, 2023"
+              :value="0"
             ></v-radio>
             <v-radio
-              label="Option 2"
-              value="1"
-              @click="() => {
-              map?.fitBounds(texasBounds);
-              timeIndex = 10;
-            }"
+              label="November 3, 2023"
+              :value="1"
             ></v-radio>
             <v-radio
-              label="August 2023 - This is a really long option"
-              value="2"
-              @click="() => {
-              map?.fitBounds(northeastBounds);
-              timeIndex = 72;
-            }"
+              label="March 28, 2024"
+              :value="2"
             ></v-radio>
           </v-radio-group>
         </div>
@@ -156,7 +144,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import L, { Map, icon } from "leaflet";
+import L, { Map } from "leaflet";
 
 import { cividis } from "./cividis";
 import fieldOfRegard from "./assets/TEMPO_FOR.json";
@@ -167,59 +155,59 @@ import { MapBoxFeature, MapBoxFeatureCollection, geocodingInfoForSearch } from "
 type SheetType = "text" | "video" | null;
 type Timeout = ReturnType<typeof setTimeout>;
 
-const datetimes = [
-  "Wed, Nov 01, 2023 -- 11:42 (UTC)",
-  "Wed, Nov 01, 2023 -- 12:22 (UTC)",
-  "Wed, Nov 01, 2023 -- 01:02 (UTC)",
-  "Wed, Nov 01, 2023 -- 01:42 (UTC)",
-  "Wed, Nov 01, 2023 -- 02:22 (UTC)",
-  "Wed, Nov 01, 2023 -- 03:22 (UTC)",
-  "Wed, Nov 01, 2023 -- 04:22 (UTC)",
-  "Wed, Nov 01, 2023 -- 05:22 (UTC)",
-  "Wed, Nov 01, 2023 -- 06:22 (UTC)",
-  "Wed, Nov 01, 2023 -- 07:22 (UTC)",
-  "Wed, Nov 01, 2023 -- 08:22 (UTC)",
-  "Wed, Nov 01, 2023 -- 09:22 (UTC)",
-  "Wed, Nov 01, 2023 -- 10:02 (UTC)",
-  "Wed, Nov 01, 2023 -- 10:42 (UTC)",
-  "Wed, Nov 01, 2023 -- 11:22 (UTC)",
-  "Fri, Nov 03, 2023 -- 11:42 (UTC)",
-  "Fri, Nov 03, 2023 -- 12:22 (UTC)",
-  "Fri, Nov 03, 2023 -- 01:02 (UTC)",
-  "Fri, Nov 03, 2023 -- 01:42 (UTC)",
-  "Fri, Nov 03, 2023 -- 02:22 (UTC)",
-  "Fri, Nov 03, 2023 -- 03:22 (UTC)",
-  "Fri, Nov 03, 2023 -- 04:22 (UTC)",
-  "Fri, Nov 03, 2023 -- 05:22 (UTC)",
-  "Fri, Nov 03, 2023 -- 06:22 (UTC)",
-  "Fri, Nov 03, 2023 -- 07:22 (UTC)",
-  "Fri, Nov 03, 2023 -- 08:22 (UTC)",
-  "Fri, Nov 03, 2023 -- 09:22 (UTC)",
-  "Fri, Nov 03, 2023 -- 10:02 (UTC)",
-  "Fri, Nov 03, 2023 -- 10:42 (UTC)",
-  "Fri, Nov 03, 2023 -- 11:22 (UTC)",
-  "Thu, Mar 28, 2024 -- 11:43 (UTC)",
-  "Thu, Mar 28, 2024 -- 12:24 (UTC)",
-  "Thu, Mar 28, 2024 -- 01:04 (UTC)",
-  "Thu, Mar 28, 2024 -- 01:44 (UTC)",
-  "Thu, Mar 28, 2024 -- 02:44 (UTC)",
-  "Thu, Mar 28, 2024 -- 03:44 (UTC)",
-  "Thu, Mar 28, 2024 -- 04:44 (UTC)",
-  "Thu, Mar 28, 2024 -- 05:44 (UTC)",
-  "Thu, Mar 28, 2024 -- 06:44 (UTC)",
-  "Thu, Mar 28, 2024 -- 07:44 (UTC)",
-  "Thu, Mar 28, 2024 -- 08:44 (UTC)",
-  "Thu, Mar 28, 2024 -- 09:44 (UTC)",
-  "Thu, Mar 28, 2024 -- 10:44 (UTC)",
-  "Thu, Mar 28, 2024 -- 11:24 (UTC)",
+const timestamps = [
+  1698838920000,
+  1698841320000,
+  1698843720000,
+  1698846120000,
+  1698848520000,
+  1698852120000,
+  1698855720000,
+  1698859320000,
+  1698862920000,
+  1698866520000,
+  1698870120000,
+  1698873720000,
+  1698876120000,
+  1698878520000,
+  1698880920000,
+  1699011720000,
+  1699014120000,
+  1699016520000,
+  1699018920000,
+  1699021320000,
+  1699024920000,
+  1699028520000,
+  1699032120000,
+  1699035720000,
+  1699039320000,
+  1699042920000,
+  1699046520000,
+  1699048920000,
+  1699051320000,
+  1699053720000,
+  1711626180000,
+  1711628640000,
+  1711631040000,
+  1711633440000,
+  1711637040000,
+  1711640640000,
+  1711644240000,
+  1711647840000,
+  1711651440000,
+  1711655040000,
+  1711658640000,
+  1711662240000,
+  1711665840000,
+  1711668240000,
 ];
 
 export default defineComponent({
   data() {
     const showSplashScreen = new URLSearchParams(window.location.search).get("splash")?.toLowerCase() !== "false";
-    const bounds = new L.LatLngBounds(
-      new L.LatLng(17.025, -129.975),
-      new L.LatLng(63.975, -54.475)
+    const novDecBounds = new L.LatLngBounds(
+      new L.LatLng(17.025, -154.975),
+      new L.LatLng(63.975, -24.475)
     );
 
     const fieldOfRegardLayer = L.geoJSON(
@@ -249,20 +237,7 @@ export default defineComponent({
       playInterval: null as Timeout | null,
       map: null as Map | null,
       basemap: null as L.TileLayer.WMS | null,
-      bounds,
-      texasBounds: new L.LatLngBounds(
-        new L.LatLng(25.72, -108.23),
-        new L.LatLng(36.69, -92.9)
-      ),
-      
-      northeastBounds: new L.LatLngBounds(
-        new L.LatLng(40.3, -74.5),
-        new L.LatLng(43.5, -69.6)
-      ),
-      novDecBounds: new L.LatLngBounds(
-        new L.LatLng(17.025, -154.975),
-        new L.LatLng(63.975, -24.475)
-      ),
+      novDecBounds,
       marchBounds: new L.LatLngBounds(
         new L.LatLng(14.01, -167.99),
         new L.LatLng(72.99, -13.01)
@@ -271,16 +246,15 @@ export default defineComponent({
 
       timestep: 0,
       timeIndex: 0,
-      timestamp: 0,
       minIndex: 0,
       maxIndex: 14,
-      timeValues: [...Array(datetimes.length).keys()],
+      timeValues: [...Array(timestamps.length).keys()],
       playing: false,
-      imageOverlay: new L.ImageOverlay("", bounds, {
+      imageOverlay: new L.ImageOverlay("", novDecBounds, {
         opacity: 1,
         interactive: false,
       }),
-      datetimes,
+      timestamps,
 
       searchOpen: true,
       searchErrorMessage: null as string | null,
@@ -308,7 +282,7 @@ export default defineComponent({
     this.basemap = new L.TileLayer.WMS('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
       crs: L.CRS.EPSG4326
     }).addTo(this.map as Map);
-    this.map.fitBounds(this.bounds);
+    this.map.fitBounds(this.novDecBounds);
 
     const labelPane = this.map.createPane("labels");
     labelPane.style.zIndex = "650";
@@ -374,9 +348,25 @@ export default defineComponent({
         }
       }
     },
+    timestamp(): number {
+      return this.timestamps[this.timeIndex];
+    },
+    date() {
+      return new Date(this.timestamp);
+    },
+    // TODO: Maybe there's a built-in Date function to get this formatting?
+    thumbLabel(): string {
+      const hours = this.date.getHours();
+      const amPm = hours >= 12 ? "PM" : "AM";
+      let hourValue = hours % 12;
+      if (hourValue === 0) {
+        hourValue = 12;
+      }
+      return `${this.date.getMonth()+1}/${this.date.getDate()}/${this.date.getFullYear()} ${hourValue}:${this.date.getMinutes().toString().padStart(2, '0')} ${amPm}`;
+    },
     imageUrl(): string {
-      const date = new Date(this.timestamp);
-      return `https://tempo-demo-images.s3.amazonaws.com/tempo_${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}T${date.getHours()}h${date.getMinutes()}m.png`;
+      const date = this.date;
+      return `https://tempo-demo-images.s3.amazonaws.com/tempo_${date.getUTCFullYear()}-${(date.getUTCMonth()+1).toString().padStart(2, '0')}-${date.getUTCDate().toString().padStart(2, '0')}T${date.getUTCHours()}h${date.getUTCMinutes().toString().padStart(2, '0')}m.png`;
     },
   },
 
@@ -454,10 +444,11 @@ export default defineComponent({
     radio(value: number) {
       const minIndex = 15 * value;
       this.minIndex = minIndex;
-      this.maxIndex = Math.min(15 * (value + 1) - 1, this.datetimes.length - 1);
+      this.maxIndex = Math.min(15 * (value + 1) - 1, this.timestamps.length - 1);
       this.timeIndex = minIndex;
       const bounds = value < 2 ? this.novDecBounds : this.marchBounds;
       this.map?.fitBounds(bounds);
+      this.imageOverlay.setBounds(bounds);
     }
   }
 });
