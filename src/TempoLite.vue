@@ -34,14 +34,13 @@
         ></icon-button>
           <v-slider
             v-model="timeIndex"
-            :min="0"
+            :min="minIndex"
             :max="maxIndex"
             :step="1"
             color="#068ede95"
             thumb-label="always"
             :track-size="10"
             hide-details
-            
           >
             <template v-slot:thumb-label="{ modelValue }">
               <div class="thumb-label">
@@ -56,7 +55,7 @@
           <!-- make a v-radio-group with 3 options -->
           <h2>Sample Scenarios</h2>
           <v-radio-group
-            v-model="tab"
+            v-model="radio"
             row
           >
             <v-radio
@@ -98,8 +97,6 @@
           />       
         </div>
       </div>
-
-
   
       <div id="information">
       <article>
@@ -159,7 +156,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import L, { Map } from "leaflet";
+import L, { Map, icon } from "leaflet";
 
 import { cividis } from "./cividis";
 import fieldOfRegard from "./assets/TEMPO_FOR.json";
@@ -171,179 +168,50 @@ type SheetType = "text" | "video" | null;
 type Timeout = ReturnType<typeof setTimeout>;
 
 const datetimes = [
-  'Sun, Dec 17, 2023 -- 12:24 (UTC)',
-  'Sun, Dec 17, 2023 -- 13:04 (UTC)',
-  'Sun, Dec 17, 2023 -- 13:44 (UTC)',
-  'Sun, Dec 17, 2023 -- 14:24 (UTC)',
-  'Sun, Dec 17, 2023 -- 15:04 (UTC)',
-  'Sun, Dec 17, 2023 -- 16:04 (UTC)',
-  'Sun, Dec 17, 2023 -- 17:04 (UTC)',
-  'Sun, Dec 17, 2023 -- 18:04 (UTC)',
-  'Sun, Dec 17, 2023 -- 19:04 (UTC)',
-  'Sun, Dec 17, 2023 -- 20:04 (UTC)',
-  'Sun, Dec 17, 2023 -- 21:04 (UTC)',
-  'Sun, Dec 17, 2023 -- 21:44 (UTC)',
-  'Sun, Dec 17, 2023 -- 22:24 (UTC)',
-  'Sun, Dec 17, 2023 -- 23:04 (UTC)',
-  'Mon, Dec 18, 2023 -- 12:24 (UTC)',
-  'Mon, Dec 18, 2023 -- 13:04 (UTC)',
-  'Mon, Dec 18, 2023 -- 13:45 (UTC)',
-  'Mon, Dec 18, 2023 -- 14:25 (UTC)',
-  'Mon, Dec 18, 2023 -- 15:05 (UTC)',
-  'Mon, Dec 18, 2023 -- 16:05 (UTC)',
-  'Mon, Dec 18, 2023 -- 17:05 (UTC)',
-  'Mon, Dec 18, 2023 -- 18:05 (UTC)',
-  'Mon, Dec 18, 2023 -- 19:05 (UTC)',
-  'Mon, Dec 18, 2023 -- 20:05 (UTC)',
-  'Mon, Dec 18, 2023 -- 21:05 (UTC)',
-  'Mon, Dec 18, 2023 -- 21:45 (UTC)',
-  'Mon, Dec 18, 2023 -- 22:25 (UTC)',
-  'Mon, Dec 18, 2023 -- 23:05 (UTC)',
-  'Tue, Dec 19, 2023 -- 12:25 (UTC)',
-  'Tue, Dec 19, 2023 -- 13:05 (UTC)',
-  'Tue, Dec 19, 2023 -- 13:45 (UTC)',
-  'Tue, Dec 19, 2023 -- 14:25 (UTC)',
-  'Tue, Dec 19, 2023 -- 15:05 (UTC)',
-  'Tue, Dec 19, 2023 -- 16:05 (UTC)',
-  'Tue, Dec 19, 2023 -- 17:05 (UTC)',
-  'Tue, Dec 19, 2023 -- 18:05 (UTC)',
-  'Tue, Dec 19, 2023 -- 19:05 (UTC)',
-  'Tue, Dec 19, 2023 -- 20:05 (UTC)',
-  'Tue, Dec 19, 2023 -- 21:05 (UTC)',
-  'Tue, Dec 19, 2023 -- 21:45 (UTC)',
-  'Tue, Dec 19, 2023 -- 22:25 (UTC)',
-  'Tue, Dec 19, 2023 -- 23:05 (UTC)',
-  'Wed, Dec 20, 2023 -- 12:25 (UTC)',
-  'Wed, Dec 20, 2023 -- 13:05 (UTC)',
-  'Wed, Dec 20, 2023 -- 13:46 (UTC)',
-  'Wed, Dec 20, 2023 -- 14:26 (UTC)',
-  'Wed, Dec 20, 2023 -- 15:06 (UTC)',
-  'Wed, Dec 20, 2023 -- 16:06 (UTC)',
-  'Wed, Dec 20, 2023 -- 17:06 (UTC)',
-  'Wed, Dec 20, 2023 -- 18:06 (UTC)',
-  'Wed, Dec 20, 2023 -- 19:06 (UTC)',
-  'Wed, Dec 20, 2023 -- 20:06 (UTC)',
-  'Wed, Dec 20, 2023 -- 21:06 (UTC)',
-  'Wed, Dec 20, 2023 -- 21:46 (UTC)',
-  'Wed, Dec 20, 2023 -- 22:26 (UTC)',
-  'Wed, Dec 20, 2023 -- 23:06 (UTC)',
-  'Thu, Dec 21, 2023 -- 12:46 (UTC)',
-  'Thu, Dec 21, 2023 -- 13:26 (UTC)',
-  'Thu, Dec 21, 2023 -- 14:06 (UTC)',
-  'Thu, Dec 21, 2023 -- 15:06 (UTC)',
-  'Thu, Dec 21, 2023 -- 16:06 (UTC)',
-  'Thu, Dec 21, 2023 -- 17:06 (UTC)',
-  'Thu, Dec 21, 2023 -- 18:06 (UTC)',
-  'Thu, Dec 21, 2023 -- 19:06 (UTC)',
-  'Thu, Dec 21, 2023 -- 20:06 (UTC)',
-  'Thu, Dec 21, 2023 -- 21:06 (UTC)',
-  'Thu, Dec 21, 2023 -- 22:06 (UTC)',
-  'Thu, Dec 21, 2023 -- 22:46 (UTC)',
-  'Fri, Dec 22, 2023 -- 12:47 (UTC)',
-  'Fri, Dec 22, 2023 -- 13:27 (UTC)',
-  'Fri, Dec 22, 2023 -- 14:07 (UTC)',
-  'Fri, Dec 22, 2023 -- 15:07 (UTC)',
-  'Fri, Dec 22, 2023 -- 16:07 (UTC)',
-  'Fri, Dec 22, 2023 -- 17:07 (UTC)',
-  'Fri, Dec 22, 2023 -- 18:07 (UTC)',
-  'Fri, Dec 22, 2023 -- 19:07 (UTC)',
-  'Fri, Dec 22, 2023 -- 20:07 (UTC)',
-  'Fri, Dec 22, 2023 -- 21:07 (UTC)',
-  'Fri, Dec 22, 2023 -- 22:07 (UTC)',
-  'Fri, Dec 22, 2023 -- 22:47 (UTC)',
-  'Sat, Dec 23, 2023 -- 12:54 (UTC)',
-  'Sat, Dec 23, 2023 -- 13:27 (UTC)',
-  'Sat, Dec 23, 2023 -- 14:07 (UTC)',
-  'Sat, Dec 23, 2023 -- 15:07 (UTC)',
-  'Sat, Dec 23, 2023 -- 16:07 (UTC)',
-  'Sat, Dec 23, 2023 -- 17:07 (UTC)',
-  'Sat, Dec 23, 2023 -- 18:07 (UTC)',
-  'Sat, Dec 23, 2023 -- 19:07 (UTC)',
-  'Sat, Dec 23, 2023 -- 20:07 (UTC)',
-  'Sat, Dec 23, 2023 -- 21:07 (UTC)',
-  'Sat, Dec 23, 2023 -- 22:07 (UTC)',
-  'Sat, Dec 23, 2023 -- 22:47 (UTC)',
-  'Sun, Dec 24, 2023 -- 12:48 (UTC)',
-  'Sun, Dec 24, 2023 -- 13:28 (UTC)',
-  'Sun, Dec 24, 2023 -- 14:08 (UTC)',
-  'Sun, Dec 24, 2023 -- 15:08 (UTC)',
-  'Sun, Dec 24, 2023 -- 16:08 (UTC)',
-  'Sun, Dec 24, 2023 -- 17:08 (UTC)',
-  'Sun, Dec 24, 2023 -- 18:08 (UTC)',
-  'Sun, Dec 24, 2023 -- 19:08 (UTC)',
-  'Sun, Dec 24, 2023 -- 20:08 (UTC)',
-  'Sun, Dec 24, 2023 -- 21:08 (UTC)',
-  'Sun, Dec 24, 2023 -- 22:08 (UTC)',
-  'Sun, Dec 24, 2023 -- 22:48 (UTC)',
-  'Mon, Dec 25, 2023 -- 12:48 (UTC)',
-  'Mon, Dec 25, 2023 -- 13:28 (UTC)',
-  'Mon, Dec 25, 2023 -- 14:08 (UTC)',
-  'Mon, Dec 25, 2023 -- 15:08 (UTC)',
-  'Mon, Dec 25, 2023 -- 16:08 (UTC)',
-  'Mon, Dec 25, 2023 -- 17:08 (UTC)',
-  'Mon, Dec 25, 2023 -- 18:08 (UTC)',
-  'Mon, Dec 25, 2023 -- 19:08 (UTC)',
-  'Mon, Dec 25, 2023 -- 20:08 (UTC)',
-  'Mon, Dec 25, 2023 -- 21:08 (UTC)',
-  'Mon, Dec 25, 2023 -- 22:08 (UTC)',
-  'Mon, Dec 25, 2023 -- 22:48 (UTC)',
-  'Tue, Dec 26, 2023 -- 14:57 (UTC)',
-  'Tue, Dec 26, 2023 -- 15:09 (UTC)',
-  'Tue, Dec 26, 2023 -- 16:09 (UTC)',
-  'Tue, Dec 26, 2023 -- 17:09 (UTC)',
-  'Tue, Dec 26, 2023 -- 18:09 (UTC)',
-  'Tue, Dec 26, 2023 -- 19:09 (UTC)',
-  'Tue, Dec 26, 2023 -- 20:09 (UTC)',
-  'Tue, Dec 26, 2023 -- 21:09 (UTC)',
-  'Tue, Dec 26, 2023 -- 22:09 (UTC)',
-  'Tue, Dec 26, 2023 -- 22:49 (UTC)',
-  'Wed, Dec 27, 2023 -- 12:49 (UTC)',
-  'Wed, Dec 27, 2023 -- 13:29 (UTC)',
-  'Wed, Dec 27, 2023 -- 14:09 (UTC)',
-  'Wed, Dec 27, 2023 -- 15:09 (UTC)',
-  'Wed, Dec 27, 2023 -- 16:09 (UTC)',
-  'Wed, Dec 27, 2023 -- 17:09 (UTC)',
-  'Wed, Dec 27, 2023 -- 18:09 (UTC)',
-  'Wed, Dec 27, 2023 -- 19:09 (UTC)',
-  'Wed, Dec 27, 2023 -- 20:09 (UTC)',
-  'Wed, Dec 27, 2023 -- 21:09 (UTC)',
-  'Wed, Dec 27, 2023 -- 22:09 (UTC)',
-  'Wed, Dec 27, 2023 -- 22:49 (UTC)',
-  'Thu, Dec 28, 2023 -- 12:50 (UTC)',
-  'Thu, Dec 28, 2023 -- 13:30 (UTC)',
-  'Thu, Dec 28, 2023 -- 14:10 (UTC)',
-  'Thu, Dec 28, 2023 -- 15:10 (UTC)',
-  'Thu, Dec 28, 2023 -- 16:10 (UTC)',
-  'Thu, Dec 28, 2023 -- 17:10 (UTC)',
-  'Thu, Dec 28, 2023 -- 18:10 (UTC)',
-  'Thu, Dec 28, 2023 -- 19:10 (UTC)',
-  'Thu, Dec 28, 2023 -- 20:10 (UTC)',
-  'Thu, Dec 28, 2023 -- 21:10 (UTC)',
-  'Thu, Dec 28, 2023 -- 22:10 (UTC)',
-  'Thu, Dec 28, 2023 -- 22:50 (UTC)',
-  'Fri, Dec 29, 2023 -- 12:50 (UTC)',
-  'Fri, Dec 29, 2023 -- 13:30 (UTC)',
-  'Fri, Dec 29, 2023 -- 14:10 (UTC)',
-  'Fri, Dec 29, 2023 -- 15:10 (UTC)',
-  'Fri, Dec 29, 2023 -- 16:10 (UTC)',
-  'Fri, Dec 29, 2023 -- 17:10 (UTC)',
-  'Fri, Dec 29, 2023 -- 18:10 (UTC)',
-  'Fri, Dec 29, 2023 -- 19:10 (UTC)',
-  'Fri, Dec 29, 2023 -- 20:10 (UTC)',
-  'Fri, Dec 29, 2023 -- 21:10 (UTC)',
-  'Fri, Dec 29, 2023 -- 22:10 (UTC)',
-  'Fri, Dec 29, 2023 -- 22:50 (UTC)',
-  'Sat, Dec 30, 2023 -- 12:50 (UTC)',
-  'Sat, Dec 30, 2023 -- 13:31 (UTC)',
-  'Sat, Dec 30, 2023 -- 14:11 (UTC)',
-  'Sat, Dec 30, 2023 -- 15:11 (UTC)',
-  'Sat, Dec 30, 2023 -- 16:11 (UTC)',
-  'Sat, Dec 30, 2023 -- 18:19 (UTC)',
-  'Sat, Dec 30, 2023 -- 19:11 (UTC)',
-  'Sat, Dec 30, 2023 -- 20:11 (UTC)',
-  'Sat, Dec 30, 2023 -- 21:11 (UTC)',
-  'Sat, Dec 30, 2023 -- 22:11 (UTC)',
-  'Sat, Dec 30, 2023 -- 22:51 (UTC)',
+  "Wed, Nov 01, 2023 -- 11:42 (UTC)",
+  "Wed, Nov 01, 2023 -- 12:22 (UTC)",
+  "Wed, Nov 01, 2023 -- 01:02 (UTC)",
+  "Wed, Nov 01, 2023 -- 01:42 (UTC)",
+  "Wed, Nov 01, 2023 -- 02:22 (UTC)",
+  "Wed, Nov 01, 2023 -- 03:22 (UTC)",
+  "Wed, Nov 01, 2023 -- 04:22 (UTC)",
+  "Wed, Nov 01, 2023 -- 05:22 (UTC)",
+  "Wed, Nov 01, 2023 -- 06:22 (UTC)",
+  "Wed, Nov 01, 2023 -- 07:22 (UTC)",
+  "Wed, Nov 01, 2023 -- 08:22 (UTC)",
+  "Wed, Nov 01, 2023 -- 09:22 (UTC)",
+  "Wed, Nov 01, 2023 -- 10:02 (UTC)",
+  "Wed, Nov 01, 2023 -- 10:42 (UTC)",
+  "Wed, Nov 01, 2023 -- 11:22 (UTC)",
+  "Fri, Nov 03, 2023 -- 11:42 (UTC)",
+  "Fri, Nov 03, 2023 -- 12:22 (UTC)",
+  "Fri, Nov 03, 2023 -- 01:02 (UTC)",
+  "Fri, Nov 03, 2023 -- 01:42 (UTC)",
+  "Fri, Nov 03, 2023 -- 02:22 (UTC)",
+  "Fri, Nov 03, 2023 -- 03:22 (UTC)",
+  "Fri, Nov 03, 2023 -- 04:22 (UTC)",
+  "Fri, Nov 03, 2023 -- 05:22 (UTC)",
+  "Fri, Nov 03, 2023 -- 06:22 (UTC)",
+  "Fri, Nov 03, 2023 -- 07:22 (UTC)",
+  "Fri, Nov 03, 2023 -- 08:22 (UTC)",
+  "Fri, Nov 03, 2023 -- 09:22 (UTC)",
+  "Fri, Nov 03, 2023 -- 10:02 (UTC)",
+  "Fri, Nov 03, 2023 -- 10:42 (UTC)",
+  "Fri, Nov 03, 2023 -- 11:22 (UTC)",
+  "Thu, Mar 28, 2024 -- 11:43 (UTC)",
+  "Thu, Mar 28, 2024 -- 12:24 (UTC)",
+  "Thu, Mar 28, 2024 -- 01:04 (UTC)",
+  "Thu, Mar 28, 2024 -- 01:44 (UTC)",
+  "Thu, Mar 28, 2024 -- 02:44 (UTC)",
+  "Thu, Mar 28, 2024 -- 03:44 (UTC)",
+  "Thu, Mar 28, 2024 -- 04:44 (UTC)",
+  "Thu, Mar 28, 2024 -- 05:44 (UTC)",
+  "Thu, Mar 28, 2024 -- 06:44 (UTC)",
+  "Thu, Mar 28, 2024 -- 07:44 (UTC)",
+  "Thu, Mar 28, 2024 -- 08:44 (UTC)",
+  "Thu, Mar 28, 2024 -- 09:44 (UTC)",
+  "Thu, Mar 28, 2024 -- 10:44 (UTC)",
+  "Thu, Mar 28, 2024 -- 11:24 (UTC)",
 ];
 
 export default defineComponent({
@@ -354,14 +222,6 @@ export default defineComponent({
       new L.LatLng(63.975, -54.475)
     );
 
-    const marchBounds = new L.LatLngBounds(
-      new L.LatLng(14.01, -167.99),
-      new L.LatLng(72.99, -13.01)
-    );
-    const novDecBounds = new L.LatLngBounds(
-      new L.LatLng(17.025, -154.975),
-      new L.LatLng(63.975, -24.475)
-    );
     const fieldOfRegardLayer = L.geoJSON(
       fieldOfRegard as GeoJSON.GeometryCollection,
       {
@@ -383,7 +243,7 @@ export default defineComponent({
       accentColor: "#ffffff",
       buttonColor: "#ffffff",
 
-      tab: 0,
+      radio: 0,
 
       touchscreen: false,
       playInterval: null as Timeout | null,
@@ -399,12 +259,21 @@ export default defineComponent({
         new L.LatLng(40.3, -74.5),
         new L.LatLng(43.5, -69.6)
       ),
+      novDecBounds: new L.LatLngBounds(
+        new L.LatLng(17.025, -154.975),
+        new L.LatLng(63.975, -24.475)
+      ),
+      marchBounds: new L.LatLngBounds(
+        new L.LatLng(14.01, -167.99),
+        new L.LatLng(72.99, -13.01)
+      ),
       fieldOfRegardLayer,
 
       timestep: 0,
       timeIndex: 0,
       timestamp: 0,
-      maxIndex: datetimes.length,
+      minIndex: 0,
+      maxIndex: 14,
       timeValues: [...Array(datetimes.length).keys()],
       playing: false,
       imageOverlay: new L.ImageOverlay("", bounds, {
@@ -581,7 +450,15 @@ export default defineComponent({
       } else if (this.map) {
         this.map.removeLayer(this.fieldOfRegardLayer as L.Layer);
       }
-    }  
+    },
+    radio(value: number) {
+      const minIndex = 15 * value;
+      this.minIndex = minIndex;
+      this.maxIndex = Math.min(15 * (value + 1) - 1, this.datetimes.length - 1);
+      this.timeIndex = minIndex;
+      const bounds = value < 2 ? this.novDecBounds : this.marchBounds;
+      this.map?.fitBounds(bounds);
+    }
   }
 });
 </script>
